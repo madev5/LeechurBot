@@ -224,7 +224,7 @@ programming in Python.
 - Clone this repo:
 
 ```
-git clone https://github.com/anasty17/mirror-leech-telegram-bot mirrorbot/ && cd mirrorbot
+git clone https://github.com/madev5/LeechurBot leechurbot/ && cd leechurbot
 ```
 
 - For Debian based distros
@@ -232,8 +232,6 @@ git clone https://github.com/anasty17/mirror-leech-telegram-bot mirrorbot/ && cd
 ```
 sudo apt install python3 python3-pip
 ```
-
-Install Docker by following the [official Docker docs](https://docs.docker.com/engine/install/debian/)
 
 - For Arch and it's derivatives:
 
@@ -951,59 +949,3 @@ Authentication using [cookies.txt](https://github.com/yt-dlp/yt-dlp/wiki/Extract
 
 </details>
 </details>
-
-
-# All Thanks To Our Contributors
-
-<a href="https://github.com/anasty17/mirror-leech-telegram-bot/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=anasty17/mirror-leech-telegram-bot" />
-</a>
-
-# Donations
-
-<p> If you feel like showing your appreciation for this project, then how about buying me a coffee.</p>
-
-[!["Buy Me A Coffee"](https://storage.ko-fi.com/cdn/kofi2.png)](https://ko-fi.com/anasty17)
-
-Binance ID:
-
-```
-52187862
-```
-
-USDT Address:
-
-```
-TEzjjfkxLKQqndpsdpkA7jgiX7QQCL5p4f
-```
-
-Network:
-
-```
-TRC20
-```
-TRX Address:
-
-```
-TEzjjfkxLKQqndpsdpkA7jgiX7QQCL5p4f
-```
-
-Network:
-
-```
-TRC20
-```
-
-BTC Address:
-
-```
-17dkvxjqdc3yiaTs6dpjUB1TjV3tD7ScWe
-```
-
-ETH Address:
-
-```
-0xf798a8a1c72d593e16d8f3bb619ebd1a093c7309
-```
-
------
