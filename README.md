@@ -732,7 +732,16 @@ python3 generate_drive_token.py
 4. Files will be saved directly to your local directory without cloud upload
 5. Check if files were saved: `ls -la /your/desired/path`
 
-- So in short, up: has 5 possible values which are: `gd` (Upload to GDRIVE_ID), `rc` (Upload to RCLONE_PATH), `rcl` (Select Rclone Path), `rclone_path` (remote:path (owner rclone.conf) or `mrcc`:remote:path (user rclone.conf)), and `local:/path` (Save to local directory)
+**Docker Testing:**
+To test the Docker setup:
+1. `git clone` this repository
+2. `cd` into the repository directory  
+3. Edit `docker-compose.yml` to add your bot configuration
+4. Run: `docker-compose up`
+5. Test with: `/mirror <link> -up local:testfolder`
+6. Verify files appear in `./downloads/testfolder` on your host
+
+- So in short, up: has 5 possible values which are: `gd` (Upload to GDRIVE_ID), `rc` (Upload to RCLONE_PATH), `rcl` (Select Rclone Path), `rclone_path` (remote:path (owner rclone.conf) or `mrcc`:remote:path (user rclone.conf)), and `local:path` (Save to local directory with Docker support)
 
 ------
 

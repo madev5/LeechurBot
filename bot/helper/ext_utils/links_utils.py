@@ -92,6 +92,11 @@ def get_local_path(destination: str):
     base_path = Config.LOCAL_STORAGE_PATH.strip() if Config.LOCAL_STORAGE_PATH else ""
     
     if base_path:
+        # Ensure base_path is absolute for security
+        if not ospath.isabs(base_path):
+            # Convert relative LOCAL_STORAGE_PATH to absolute
+            base_path = ospath.abspath(base_path)
+        
         # Use configured base path for relative paths
         return ospath.join(base_path, local_path)
     else:
@@ -103,13 +108,16 @@ def validate_local_path(path: str):
     """
     Validate if a local path exists and is writable.
     Returns tuple (is_valid, error_message)
+    
+    Note: This function expects an absolute path. Use get_local_path() first
+    to resolve relative paths against LOCAL_STORAGE_PATH.
     """
     if not path:
         return False, "Empty path provided"
     
-    # Reject relative paths for security
+    # Ensure path is absolute (should be resolved by get_local_path already)
     if not ospath.isabs(path):
-        return False, f"Path must be absolute, got relative path: {path}"
+        return False, f"Path must be absolute after resolution, got: {path}"
     
     # Convert to absolute path and normalize
     abs_path = ospath.abspath(ospath.normpath(path))
