@@ -43,6 +43,9 @@ from .ext_utils.links_utils import (
     is_rclone_path,
     is_gdrive_link,
     is_telegram_link,
+    is_local_path,
+    get_local_path,
+    validate_local_path,
 )
 from .ext_utils.media_utils import (
     create_thumb,
@@ -269,15 +272,25 @@ class TaskConfig:
                 ) and self.user_dict.get("USER_TOKENS", False):
                     self.up_dest = f"mtp:{self.up_dest}"
             elif is_rclone_path(self.up_dest):
-                if not self.up_dest.startswith("mrcc:") and self.user_dict.get(
-                    "USER_TOKENS", False
-                ):
-                    self.up_dest = f"mrcc:{self.up_dest}"
-                self.up_dest = self.up_dest.strip("/")
+                # Handle local paths
+                if is_local_path(self.up_dest):
+                    local_path = get_local_path(self.up_dest)
+                    is_valid, error_msg = validate_local_path(local_path)
+                    if not is_valid:
+                        raise ValueError(f"Invalid local path: {error_msg}")
+                    # Keep the destination as is for local paths
+                else:
+                    # Handle regular rclone paths
+                    if not self.up_dest.startswith("mrcc:") and self.user_dict.get(
+                        "USER_TOKENS", False
+                    ):
+                        self.up_dest = f"mrcc:{self.up_dest}"
+                    self.up_dest = self.up_dest.strip("/")
             else:
                 raise ValueError("Wrong Upload Destination!")
 
-            if self.up_dest not in ["rcl", "gdl"]:
+            # Skip token validation for local paths and special values
+            if self.up_dest not in ["rcl", "gdl"] and not is_local_path(self.up_dest):
                 await self.is_token_exists(self.up_dest, "up")
 
             if self.up_dest == "rcl":

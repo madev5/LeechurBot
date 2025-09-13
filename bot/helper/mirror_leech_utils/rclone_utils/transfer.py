@@ -7,12 +7,19 @@ from json import loads
 from logging import getLogger
 from random import randrange
 from re import findall as re_findall
+from os import path as ospath
+from shutil import move as sync_move, copytree
 
 from ....core.config_manager import Config
 from ...ext_utils.bot_utils import cmd_exec, sync_to_async
 from ...ext_utils.files_utils import (
     get_mime_type,
     count_files_and_folders,
+)
+from ...ext_utils.links_utils import (
+    is_local_path,
+    get_local_path,
+    validate_local_path,
 )
 
 LOGGER = getLogger(__name__)
@@ -267,6 +274,13 @@ class RcloneTransferHelper:
     async def upload(self, path):
         self._is_upload = True
         rc_path = self._listener.up_dest
+        
+        # Handle local file destination
+        if is_local_path(rc_path):
+            await self._upload_to_local(path)
+            return
+        
+        # Handle mrcc paths (user rclone config)
         if rc_path.startswith("mrcc:"):
             rc_path = rc_path.split("mrcc:", 1)[1]
             oconfig_path = f"rclone/{self._listener.user_id}.conf"
@@ -358,6 +372,78 @@ class RcloneTransferHelper:
             link, files, folders, mime_type, destination
         )
         return
+
+    async def _upload_to_local(self, source_path):
+        """
+        Save downloaded files to a local directory instead of uploading to cloud.
+        Supports both individual files and folders.
+        """
+        try:
+            # Get the local destination path
+            local_dest = get_local_path(self._listener.up_dest)
+            if not local_dest:
+                raise ValueError("Invalid local destination format")
+            
+            # Validate the local path before proceeding
+            is_valid, error_msg = validate_local_path(local_dest)
+            if not is_valid:
+                raise ValueError(f"Local destination validation failed: {error_msg}")
+            
+            # Ensure the destination directory exists
+            if not await aiopath.exists(local_dest):
+                await makedirs(local_dest, exist_ok=True)
+                LOGGER.info(f"Created local destination directory: {local_dest}")
+            
+            # Check if source exists
+            if not await aiopath.exists(source_path):
+                raise FileNotFoundError(f"Source path does not exist: {source_path}")
+            
+            # Get file/folder info for reporting
+            if await aiopath.isdir(source_path):
+                mime_type = "Folder"
+                folders, files = await count_files_and_folders(source_path)
+                # For folders, create a subdirectory with the folder name
+                final_dest = ospath.join(local_dest, self._listener.name)
+            else:
+                mime_type = await sync_to_async(get_mime_type, source_path)
+                folders = 0
+                files = 1
+                # For files, preserve the original filename
+                final_dest = ospath.join(local_dest, ospath.basename(source_path))
+            
+            # Check if destination already exists
+            if await aiopath.exists(final_dest):
+                # Add timestamp to avoid conflicts
+                import time
+                timestamp = int(time.time())
+                if await aiopath.isdir(source_path):
+                    final_dest = f"{final_dest}_{timestamp}"
+                else:
+                    name, ext = ospath.splitext(final_dest)
+                    final_dest = f"{name}_{timestamp}{ext}"
+                LOGGER.info(f"Destination exists, using: {final_dest}")
+            
+            # Perform the actual file/folder move operation
+            if await aiopath.isdir(source_path):
+                # Use sync_to_async to run shutil.copytree in a thread
+                await sync_to_async(copytree, source_path, final_dest, dirs_exist_ok=False)
+                LOGGER.info(f"Copied folder from {source_path} to {final_dest}")
+            else:
+                # Use sync_to_async to run shutil.move in a thread
+                await sync_to_async(sync_move, source_path, final_dest)
+                LOGGER.info(f"Moved file from {source_path} to {final_dest}")
+            
+            # Report completion - no link for local files
+            destination = f"local:{final_dest}"
+            LOGGER.info(f"Local save completed. Path: {destination}")
+            await self._listener.on_upload_complete(
+                "", files, folders, mime_type, destination
+            )
+            
+        except Exception as e:
+            error_msg = f"Failed to save files locally: {str(e)}"
+            LOGGER.error(error_msg)
+            await self._listener.on_upload_error(error_msg)
 
     async def clone(self, config_path, src_remote, src_path, mime_type, method):
         destination = self._listener.up_dest
