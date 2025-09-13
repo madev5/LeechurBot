@@ -509,6 +509,8 @@ sudo apt install docker-compose-plugin
 sudo docker compose up
 ```
 
+**Note**: The docker-compose.yml file includes a volume mount `./downloads:/bot/downloads` and sets `LOCAL_STORAGE_PATH=/bot/downloads`. This allows you to use `local:` paths easily. Downloaded files will be saved to the `./downloads` directory on your host machine.
+
 - After editing files with nano, for example (nano start.sh) or git pull you must use --build to edit container files:
 
 ```
@@ -685,23 +687,61 @@ python3 generate_drive_token.py
 - Whenever you want to write path manually to use user rclone.conf that added from usetting then you must add
   the `mrcc:` at the beginning.
 
-**NEW: Local File Save Feature**
+**NEW: Enhanced Local File Save Feature with Docker Support**
 - You can now save downloaded files directly to your local filesystem instead of uploading to cloud storage.
+- **Docker Users**: Configure LOCAL_STORAGE_PATH environment variable for easy directory management.
+
+**For Docker Users (Recommended Setup):**
+1. Update your `docker-compose.yml` to include volume mount:
+   ```yaml
+   volumes:
+     - ./downloads:/bot/downloads
+   environment:
+     - LOCAL_STORAGE_PATH=/bot/downloads
+   ```
+2. Use relative paths with your commands:
+   - `-up local:movies` → saves to `./downloads/movies` on your host
+   - `-up local:documents/pdf` → saves to `./downloads/documents/pdf` on your host
+3. Files are automatically saved to your host machine's `./downloads` directory
+4. Example: `/mirror https://example.com/file.zip -up local:movies`
+
+**For Direct Installation:**
 - Use `local:/absolute/path` as the upload destination to save files locally.
 - Examples:
   - `-up local:/home/user/downloads` - saves files to this directory
   - `-up local:/data/mirror_files` - saves files to this directory
 - The local path must be absolute and the directory must exist and be writable by the bot.
-- For beginners: This is useful if you want to keep downloaded files on your server instead of uploading them to cloud storage.
+
+**Path Resolution Logic:**
+- Relative paths (e.g., `local:myfolder`) are resolved against LOCAL_STORAGE_PATH if set
+- Absolute paths (e.g., `local:/absolute/path`) are used as-is
+- If LOCAL_STORAGE_PATH is not set, falls back to current directory for backward compatibility
 
 **Beginner's Guide for Local File Save:**
+
+**For Docker Users (Easiest):**
+1. Edit your `docker-compose.yml` to add the volume mount (already included in the example)
+2. Start your container: `docker-compose up`
+3. Use commands like: `/mirror https://example.com/file.zip -up local:myfolder`
+4. Check files in your host `./downloads/myfolder` directory
+
+**For Direct Installation:**
 1. Make sure the directory exists: `mkdir -p /your/desired/path`
 2. Make sure the bot has write permissions: `chmod 755 /your/desired/path`
 3. Use the command: `/mirror https://example.com/file.zip -up local:/your/desired/path`
 4. Files will be saved directly to your local directory without cloud upload
 5. Check if files were saved: `ls -la /your/desired/path`
 
-- So in short, up: has 5 possible values which are: `gd` (Upload to GDRIVE_ID), `rc` (Upload to RCLONE_PATH), `rcl` (Select Rclone Path), `rclone_path` (remote:path (owner rclone.conf) or `mrcc`:remote:path (user rclone.conf)), and `local:/path` (Save to local directory)
+**Docker Testing:**
+To test the Docker setup:
+1. `git clone` this repository
+2. `cd` into the repository directory  
+3. Edit `docker-compose.yml` to add your bot configuration
+4. Run: `docker-compose up`
+5. Test with: `/mirror <link> -up local:testfolder`
+6. Verify files appear in `./downloads/testfolder` on your host
+
+- So in short, up: has 5 possible values which are: `gd` (Upload to GDRIVE_ID), `rc` (Upload to RCLONE_PATH), `rcl` (Select Rclone Path), `rclone_path` (remote:path (owner rclone.conf) or `mrcc`:remote:path (user rclone.conf)), and `local:path` (Save to local directory with Docker support)
 
 ------
 

@@ -377,12 +377,29 @@ class RcloneTransferHelper:
         """
         Save downloaded files to a local directory instead of uploading to cloud.
         Supports both individual files and folders.
+        
+        Uses LOCAL_STORAGE_PATH environment variable as base for relative paths.
+        For Docker users, relative paths are recommended to ensure proper mounting.
         """
         try:
-            # Get the local destination path
-            local_dest = get_local_path(self._listener.up_dest)
+            # Get the original destination for path type checking
+            original_dest = self._listener.up_dest
+            
+            # Get the resolved local destination path
+            local_dest = get_local_path(original_dest)
             if not local_dest:
                 raise ValueError("Invalid local destination format")
+            
+            # Extract the path portion to check if it's absolute
+            path_portion = original_dest.split("local:", 1)[1] if original_dest.startswith("local:") else ""
+            
+            # Warn Docker users about absolute paths
+            if path_portion and ospath.isabs(path_portion) and Config.LOCAL_STORAGE_PATH:
+                LOGGER.warning(
+                    f"Using absolute path '{path_portion}' with Docker. "
+                    "Ensure this path is properly mounted in your docker-compose.yml. "
+                    "Consider using relative paths like 'local:myfolder' instead."
+                )
             
             # Validate the local path before proceeding
             is_valid, error_msg = validate_local_path(local_dest)

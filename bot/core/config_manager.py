@@ -27,6 +27,7 @@ class Config:
     LEECH_DUMP_CHAT = ""
     LEECH_FILENAME_PREFIX = ""
     LEECH_SPLIT_SIZE = 2097152000
+    LOCAL_STORAGE_PATH = ""
     MEDIA_GROUP = False
     HYBRID_LEECH = False
     HYDRA_IP = ""

@@ -5,3 +5,13 @@ services:
     restart: on-failure
     network_mode: "host"
     container_name: lmltb
+    volumes:
+      # Mount local downloads directory
+      # Change './downloads' to your desired host directory
+      - ./downloads:/bot/downloads
+    environment:
+      # Set the local storage path inside the container
+      - LOCAL_STORAGE_PATH=/bot/downloads
+      # Add other environment variables here as needed
+      # - BOT_TOKEN=your_bot_token
+      # - OWNER_ID=your_owner_id
