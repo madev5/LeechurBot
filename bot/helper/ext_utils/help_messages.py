@@ -69,10 +69,23 @@ upload = """<b>Upload Destination</b>: -up
 ./cmd link -up rcl/gdl (rcl: to select rclone config, remote & path | gdl: To select token.pickle, gdrive id) using buttons
 You can directly add the upload path: -up remote:dir/subdir or -up Gdrive_id or -up id/username (telegram) or -up id/username|topic_id (telegram) or -up local:/absolute/path (save to local directory)
 
-<b>Local Directory Save (New!):</b>
-Use -up local:/your/absolute/path to save files directly to your local filesystem instead of uploading to cloud.
-Examples:
-• -up local:/home/user/downloads (save to this directory)
+<b>Local Directory Save (Updated for Docker!):</b>
+Use -up local:path to save files directly to your local filesystem instead of uploading to cloud.
+
+<b>For Docker Users (Recommended):</b>
+• Set up docker-compose.yml with volume mount: ./downloads:/bot/downloads
+• Set environment variable: LOCAL_STORAGE_PATH=/bot/downloads
+• Use relative paths: -up local:myfolder (resolves to /bot/downloads/myfolder)
+• Files will be saved to your host ./downloads/myfolder directory
+
+<b>Examples:</b>
+• -up local:movies (saves to LOCAL_STORAGE_PATH/movies)
+• -up local:documents/pdf (saves to LOCAL_STORAGE_PATH/documents/pdf)
+• -up local:/absolute/path (uses absolute path - ensure it's mounted in Docker!)
+
+<b>For Direct Installation:</b>
+• -up local:/home/user/downloads (save to this absolute directory)
+• -up local:./relative/path (save to relative directory)
 • -up local:/data/mirrors (save to this directory)
 Note: The local path must be absolute and the directory must be writable by the bot.
 

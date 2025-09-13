@@ -1,6 +1,8 @@
 from re import match as re_match
 from os import path as ospath, access, W_OK
 
+from bot.core.config_manager import Config
+
 
 def is_magnet(url: str):
     return bool(re_match(r"^magnet:\?.*xt=urn:(btih|btmh):([a-zA-Z0-9]{32,40}|[a-z2-7]{32}).*", url))
@@ -59,12 +61,42 @@ def is_local_path(path: str):
 
 def get_local_path(destination: str):
     """
-    Extract the actual local path from local: destination
-    Example: local:/home/user/files -> /home/user/files
+    Extract and resolve the actual local path from local: destination.
+    
+    Uses LOCAL_STORAGE_PATH environment variable as base directory for relative paths.
+    Examples:
+    - local:myfolder -> LOCAL_STORAGE_PATH/myfolder (if LOCAL_STORAGE_PATH is set)
+    - local:/absolute/path -> /absolute/path (absolute paths used as-is)
+    - local:myfolder -> ./myfolder (if LOCAL_STORAGE_PATH is not set - backward compatibility)
+    
+    Args:
+        destination: String in format "local:path"
+        
+    Returns:
+        Resolved absolute path or None if invalid format
     """
-    if is_local_path(destination):
-        return destination.split("local:", 1)[1]
-    return None
+    if not is_local_path(destination):
+        return None
+        
+    # Extract the path part after "local:"
+    local_path = destination.split("local:", 1)[1]
+    
+    if not local_path:
+        return None
+    
+    # If path is absolute, use it as-is (but warn for Docker users in calling code)
+    if ospath.isabs(local_path):
+        return local_path
+    
+    # For relative paths, use LOCAL_STORAGE_PATH as base if configured
+    base_path = Config.LOCAL_STORAGE_PATH.strip() if Config.LOCAL_STORAGE_PATH else ""
+    
+    if base_path:
+        # Use configured base path for relative paths
+        return ospath.join(base_path, local_path)
+    else:
+        # Backward compatibility: use current directory as base
+        return ospath.abspath(local_path)
 
 
 def validate_local_path(path: str):
