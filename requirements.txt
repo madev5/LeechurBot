@@ -22,6 +22,7 @@ psutil
 pymongo==4.14.1
 kurigram
 python-magic
+pyrogram
 requests
 telegraph
 tenacity
