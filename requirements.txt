@@ -1,4 +1,3 @@
-asyncio
 aiofiles
 aioshutil
 anytree
