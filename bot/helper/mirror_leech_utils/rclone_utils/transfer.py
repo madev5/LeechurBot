@@ -19,6 +19,7 @@ from ...ext_utils.files_utils import (
 from ...ext_utils.links_utils import (
     is_local_path,
     get_local_path,
+    validate_local_path,
 )
 
 LOGGER = getLogger(__name__)
@@ -380,11 +381,22 @@ class RcloneTransferHelper:
         try:
             # Get the local destination path
             local_dest = get_local_path(self._listener.up_dest)
+            if not local_dest:
+                raise ValueError("Invalid local destination format")
+            
+            # Validate the local path before proceeding
+            is_valid, error_msg = validate_local_path(local_dest)
+            if not is_valid:
+                raise ValueError(f"Local destination validation failed: {error_msg}")
             
             # Ensure the destination directory exists
             if not await aiopath.exists(local_dest):
                 await makedirs(local_dest, exist_ok=True)
                 LOGGER.info(f"Created local destination directory: {local_dest}")
+            
+            # Check if source exists
+            if not await aiopath.exists(source_path):
+                raise FileNotFoundError(f"Source path does not exist: {source_path}")
             
             # Get file/folder info for reporting
             if await aiopath.isdir(source_path):
@@ -399,10 +411,22 @@ class RcloneTransferHelper:
                 # For files, preserve the original filename
                 final_dest = ospath.join(local_dest, ospath.basename(source_path))
             
+            # Check if destination already exists
+            if await aiopath.exists(final_dest):
+                # Add timestamp to avoid conflicts
+                import time
+                timestamp = int(time.time())
+                if await aiopath.isdir(source_path):
+                    final_dest = f"{final_dest}_{timestamp}"
+                else:
+                    name, ext = ospath.splitext(final_dest)
+                    final_dest = f"{name}_{timestamp}{ext}"
+                LOGGER.info(f"Destination exists, using: {final_dest}")
+            
             # Perform the actual file/folder move operation
             if await aiopath.isdir(source_path):
                 # Use sync_to_async to run shutil.copytree in a thread
-                await sync_to_async(copytree, source_path, final_dest, dirs_exist_ok=True)
+                await sync_to_async(copytree, source_path, final_dest, dirs_exist_ok=False)
                 LOGGER.info(f"Copied folder from {source_path} to {final_dest}")
             else:
                 # Use sync_to_async to run shutil.move in a thread

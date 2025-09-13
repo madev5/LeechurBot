@@ -52,6 +52,7 @@ def is_rclone_path(path: str):
 def is_local_path(path: str):
     """
     Check if a path is a local path (starts with local:)
+    Case-sensitive to ensure security.
     """
     return path.startswith("local:")
 
@@ -74,8 +75,12 @@ def validate_local_path(path: str):
     if not path:
         return False, "Empty path provided"
     
-    # Convert to absolute path
-    abs_path = ospath.abspath(path)
+    # Reject relative paths for security
+    if not ospath.isabs(path):
+        return False, f"Path must be absolute, got relative path: {path}"
+    
+    # Convert to absolute path and normalize
+    abs_path = ospath.abspath(ospath.normpath(path))
     
     # Check if the path exists
     if not ospath.exists(abs_path):

@@ -696,6 +696,13 @@ python3 generate_drive_token.py
 - The local path must be absolute and the directory must exist and be writable by the bot.
 - For beginners: This is useful if you want to keep downloaded files on your server instead of uploading them to cloud storage.
 
+**Beginner's Guide for Local File Save:**
+1. Make sure the directory exists: `mkdir -p /your/desired/path`
+2. Make sure the bot has write permissions: `chmod 755 /your/desired/path`
+3. Use the command: `/mirror https://example.com/file.zip -up local:/your/desired/path`
+4. Files will be saved directly to your local directory without cloud upload
+5. Check if files were saved: `ls -la /your/desired/path`
+
 - So in short, up: has 5 possible values which are: `gd` (Upload to GDRIVE_ID), `rc` (Upload to RCLONE_PATH), `rcl` (Select Rclone Path), `rclone_path` (remote:path (owner rclone.conf) or `mrcc`:remote:path (user rclone.conf)), and `local:/path` (Save to local directory)
 
 ------
