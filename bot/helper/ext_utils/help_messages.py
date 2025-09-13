@@ -66,8 +66,16 @@ Note: Only mb and gb are supported or write in bytes without unit!"""
 
 upload = """<b>Upload Destination</b>: -up
 
-/cmd link -up rcl/gdl (rcl: to select rclone config, remote & path | gdl: To select token.pickle, gdrive id) using buttons
-You can directly add the upload path: -up remote:dir/subdir or -up Gdrive_id or -up id/username (telegram) or -up id/username|topic_id (telegram)
+./cmd link -up rcl/gdl (rcl: to select rclone config, remote & path | gdl: To select token.pickle, gdrive id) using buttons
+You can directly add the upload path: -up remote:dir/subdir or -up Gdrive_id or -up id/username (telegram) or -up id/username|topic_id (telegram) or -up local:/absolute/path (save to local directory)
+
+<b>Local Directory Save (New!):</b>
+Use -up local:/your/absolute/path to save files directly to your local filesystem instead of uploading to cloud.
+Examples:
+• -up local:/home/user/downloads (save to this directory)
+• -up local:/data/mirrors (save to this directory)
+Note: The local path must be absolute and the directory must be writable by the bot.
+
 If DEFAULT_UPLOAD is `rc` then you can pass up: `gd` to upload using gdrive tools to GDRIVE_ID.
 If DEFAULT_UPLOAD is `gd` then you can pass up: `rc` to upload to RCLONE_PATH.
 

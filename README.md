@@ -686,7 +686,17 @@ python3 generate_drive_token.py
 - If rclone.conf uploaded from usetting or added in `rclone/{user_id}.conf` then `RCLONE_PATH` must start with `mrcc:`.
 - Whenever you want to write path manually to use user rclone.conf that added from usetting then you must add
   the `mrcc:` at the beginning.
-- So in short, up: has 4 possible values which are: `gd` (Upload to GDRIVE_ID), `rc` (Upload to RCLONE_PATH), `rcl` (Select Rclone Path) and `rclone_path` (remote:path (owner rclone.conf) or `mrcc`:remote:path (user rclone.conf))
+
+**NEW: Local File Save Feature**
+- You can now save downloaded files directly to your local filesystem instead of uploading to cloud storage.
+- Use `local:/absolute/path` as the upload destination to save files locally.
+- Examples:
+  - `-up local:/home/user/downloads` - saves files to this directory
+  - `-up local:/data/mirror_files` - saves files to this directory
+- The local path must be absolute and the directory must exist and be writable by the bot.
+- For beginners: This is useful if you want to keep downloaded files on your server instead of uploading them to cloud storage.
+
+- So in short, up: has 5 possible values which are: `gd` (Upload to GDRIVE_ID), `rc` (Upload to RCLONE_PATH), `rcl` (Select Rclone Path), `rclone_path` (remote:path (owner rclone.conf) or `mrcc`:remote:path (user rclone.conf)), and `local:/path` (Save to local directory)
 
 ------
 
